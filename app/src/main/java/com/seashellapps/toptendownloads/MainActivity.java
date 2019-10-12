@@ -1,21 +1,20 @@
 package com.seashellapps.toptendownloads;
 
-import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
-
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,14 +26,45 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); //Sets layout
+        listApps = findViewById(R.id.xmlListView); //Wires up the variable ListAppswith the xmlListView we've created in the layout
 
+        downloadUrl("https://rss.itunes.apple.com/api/v1/us/ios-apps/top-free/all/10/explicit.rss");
 
-        listApps = findViewById(R.id.xmlListView); //Wires up the variable ListView with the View we've created in the layoit
+    }
 
-        Log.d(TAG, "onCreate: starting AsyncTask"); //Starts the other thread to get the data
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.feeds_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        String feedUrl;
+
+        switch(id){
+            case R.id.mnuFree:
+                feedUrl="https://rss.itunes.apple.com/api/v1/us/ios-apps/top-free/all/10/explicit.rss";
+                break;
+            case R.id.mnuPaid:
+                feedUrl="https://rss.itunes.apple.com/api/v1/us/ios-apps/top-paid/all/10/explicit.rss";
+                break;
+            case R.id.mnuSongs:
+                feedUrl="https://rss.itunes.apple.com/api/v1/us/itunes-music/top-songs/all/10/explicit.rss";
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        downloadUrl(feedUrl);
+        return true;
+    }
+
+    private void downloadUrl(String feedUrl) {
+        Log.d(TAG, "downloadUrl: starting AsyncTask"); //Starts the other thread to get the data
         DownloadData downloadData = new DownloadData();
-        downloadData.execute("https://rss.itunes.apple.com/api/v1/us/ios-apps/top-free/all/10/explicit.rss");
-        Log.d(TAG, "onCreate: done");
+        downloadData.execute(feedUrl);
+        Log.d(TAG, "downloadUrl: done");
     }
 
     private class DownloadData extends AsyncTask<String, Void, String> {
@@ -44,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) { //Back on Main Thread
             super.onPostExecute(s); //Has the XMLData String so can move onto the parsing
-            Log.d(TAG, "onPostExecute: parameter is " + s);
+          //  Log.d(TAG, "onPostExecute: parameter is " + s);
 
             ParseApplications parseApplications = new ParseApplications(); //object created
             parseApplications.parse(s);//Calls the parse method (see class)
@@ -58,10 +88,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            Log.d(TAG, "doInBackground: starts with " + strings[0]);
+          //  Log.d(TAG, "doInBackground: starts with " + strings[0]);
             String rssFeed = downloadXML(strings[0]);
             if (rssFeed == null) {
-                Log.e(TAG, "doInBackground: Error downloading");
+         //       Log.e(TAG, "doInBackground: Error downloading");
             }
             return rssFeed;
         }
@@ -73,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 URL url = new URL(urlPath);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 int response = connection.getResponseCode();
-                Log.d(TAG, "downloadXML: The response code was " + response);
+            //    Log.d(TAG, "downloadXML: The response code was " + response);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                 int charsRead;
@@ -91,11 +121,11 @@ public class MainActivity extends AppCompatActivity {
 
                 return xmlResult.toString();
             } catch (MalformedURLException e) {
-                Log.e(TAG, "downloadXML: Invalid URL " + e.getMessage());
+         //       Log.e(TAG, "downloadXML: Invalid URL " + e.getMessage());
             } catch (IOException e) {
-                Log.e(TAG, "downloadXML: IO Exception reading data " + e.getMessage());
+         //       Log.e(TAG, "downloadXML: IO Exception reading data " + e.getMessage());
             } catch (SecurityException e) {
-                Log.e(TAG, "downloadXML: Security Exception " + e.getMessage());
+         //       Log.e(TAG, "downloadXML: Security Exception " + e.getMessage());
                 //e.printStackTrace();
             }
 

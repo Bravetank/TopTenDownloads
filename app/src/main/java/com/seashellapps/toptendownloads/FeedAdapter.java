@@ -32,21 +32,35 @@ public class FeedAdapter extends ArrayAdapter {
 
 
     @Override
-    public View getView(int position, View convertView,  ViewGroup parent) {
-        View view = layoutInflater.inflate(layoutResource, parent, false);
-        TextView tvTitle = view.findViewById(R.id.tvTitle);
-        TextView tvCategory = view.findViewById(R.id.tvCategory);
-        TextView tvDescription = view.findViewById(R.id.tvDescription);
+    public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder viewHolder;
+
+        if (convertView == null) {
+            convertView = layoutInflater.inflate(layoutResource, parent, false);
+            viewHolder = new ViewHolder(convertView);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
 
         FeedEntry currentApp = applications.get(position);
 
-        tvTitle.setText(currentApp.getTitle());
-        tvCategory.setText(currentApp.getCategory());
-        tvDescription.setText(currentApp.getDescription());
+        viewHolder.tvTitle.setText(currentApp.getTitle());
+        viewHolder.tvCategory.setText(currentApp.getCategory());
+        viewHolder.tvDescription.setText(currentApp.getDescription());
 
-        return view;
+        return convertView;
     }
 
+    private class ViewHolder {
+        final TextView tvTitle;
+        final TextView tvCategory;
+        final TextView tvDescription;
 
-
+        public ViewHolder(View v) {
+            this.tvTitle = v.findViewById(R.id.tvTitle);
+            this.tvCategory = v.findViewById(R.id.tvCategory);
+            this.tvDescription = v.findViewById(R.id.tvDescription);
+        }
+    }
 }
